@@ -1,0 +1,52 @@
+[
+  {
+    "file": "01_mars.mp3",
+    "title": "Mars, the Bringer of War",
+    "planet": "mars",
+    "composer": "Gustav Holst",
+    "year": "1914–16",
+    "note": "The Planets, Op. 32 — movement I. Public-domain composition (1918 publication) and public-domain recording (OpenGameArt / Musopen lineage).",
+    "license": "Public domain (composition + this recording).",
+    "source": "https://opengameart.org/content/holst-the-planets-suite"
+  },
+  {
+    "file": "02_venus.mp3",
+    "title": "Venus, the Bringer of Peace",
+    "planet": "venus",
+    "composer": "Gustav Holst",
+    "year": "1914–16",
+    "note": "The Planets, Op. 32 — movement II.",
+    "license": "Public domain (composition + this recording).",
+    "source": "https://opengameart.org/content/holst-the-planets-suite"
+  },
+  {
+    "file": "03_mercury.mp3",
+    "title": "Mercury, the Winged Messenger",
+    "planet": "mercury",
+    "composer": "Gustav Holst",
+    "year": "1914–16",
+    "note": "The Planets, Op. 32 — movement III.",
+    "license": "Public domain (composition + this recording).",
+    "source": "https://opengameart.org/content/holst-the-planets-suite"
+  },
+  {
+    "file": "04_jupiter.mp3",
+    "title": "Jupiter, the Bringer of Jollity",
+    "planet": "jupiter",
+    "composer": "Gustav Holst",
+    "year": "1914–16",
+    "note": "The Planets, Op. 32 — movement IV.",
+    "license": "Public domain (composition + this recording).",
+    "source": "https://opengameart.org/content/holst-the-planets-suite"
+  },
+  {
+    "file": "05_uranus.mp3",
+    "title": "Uranus, the Magician",
+    "planet": "uranus",
+    "composer": "Gustav Holst",
+    "year": "1914–16",
+    "note": "The Planets, Op. 32 — movement VI.",
+    "license": "Public domain (composition + this recording).",
+    "source": "https://opengameart.org/content/holst-the-planets-suite"
+  }
+]

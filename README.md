@@ -1,57 +1,41 @@
 # Orbital — static browser orrery
 
-**Center any body · epicycles · Holst planet radio · surface runs**
+Same deploy model as [live-and-let-live](https://github.com/drewarrowood/live-and-let-live):  
+**plain files on `main` — no server.**
 
-Pure **static** web app — **no backend, no install, no server process**. Same model as
-[live-and-let-live](https://github.com/drewarrowood/live-and-let-live).
+**Live (after Pages is on):** https://drewarrowood.github.io/orrery/
 
-**Live:** [drewarrowood.github.io/orrery](https://drewarrowood.github.io/orrery/)  
-**Repo:** [github.com/drewarrowood/orrery](https://github.com/drewarrowood/orrery)
+## Turn on public hosting (one time)
 
-## One-click deploy (GitHub Pages)
+`live-and-let-live` is already set to: **branch `main` · folder `/`**.  
+Do the same for this repo.
 
-### Option A — Actions (recommended)
+### Exact path in GitHub
 
-1. Open repo **Settings → Pages**
-2. **Build and deployment → Source: GitHub Actions**
-3. Push to `main` (workflow `.github/workflows/pages.yml` builds & publishes)
+1. Sign in as **drewarrowood**
+2. Open: https://github.com/drewarrowood/orrery
+3. Click the **Settings** tab (repo menu bar — not your profile settings)
+4. Left sidebar, under **Code and automation**, click **Pages**
+   - Direct link: https://github.com/drewarrowood/orrery/settings/pages
+5. **Build and deployment**
+   - **Source:** Deploy from a branch  
+   - **Branch:** `main`  
+   - **Folder:** `/ (root)`  
+   - Click **Save**
+6. Wait ~1 minute. Visit: https://drewarrowood.github.io/orrery/
 
-### Option B — prebuilt `/docs` folder (no build on GitHub)
-
-1. **Settings → Pages → Source: Deploy from a branch**
-2. Branch: `main` · Folder: `/docs` · Save
-
-The `docs/` folder is a complete static site (HTML + JS + audio + videos). Open
-`docs/index.html` locally or host it anywhere.
+If the left sidebar has no **Pages** item:
+- Confirm you’re on **this repo’s** Settings (URL contains `/orrery/settings`), not account settings
+- Confirm you’re logged in as **drewarrowood** (owner)
+- On mobile: use desktop site / wider window — Pages is easy to miss in the hamburger menu
 
 ## Local
 
 ```bash
-npm install
-npm run dev          # http://localhost:8080
-npm run build        # → dist/
-npm run preview      # production static on :8080
-npm run deploy:pages # build + copy → docs/
+npm install && npm run dev     # develop
+npm run build                  # → dist/
+# publish static root:
+npm run deploy:pages           # rebuilds docs/, then copy dist → root assets if you prefer
 ```
 
-## Why videos work now
-
-| Before (SSR / Vercel server) | Now (static Pages) |
-| --- | --- |
-| Server framework + large media | Plain files under `assets/` |
-| Absolute `/assets/...` paths break under `/orrery/` | Relative `./assets/...` |
-| Heavy unoptimized MP4s | Small H.264 + `faststart` |
-
-## Features
-
-| Feature | How |
-| --- | --- |
-| Center frame | Dropdown or **Center + epicycles** |
-| Epicycles | Relative trails — speed up from Earth for retrograde |
-| Planet radio | Holst *The Planets* (public domain) |
-| Surface runs | Mars, Earth/Moon, Venus, Jupiter |
-| Camera | Drag · zoom · click focus |
-
-## License
-
-MIT (code). Audio: public-domain Holst — see `assets/audio/COPYING.txt`.
+Or open `index.html` via any static host — videos/audio live under `assets/`.
