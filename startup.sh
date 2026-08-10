@@ -4,4 +4,9 @@ cd /workspace
 if curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8080/; then
   exit 0
 fi
-npm run dev >>/tmp/app-startup.log 2>&1 &
+# Prefer production static preview when dist exists (matches GitHub Pages)
+if [ -d dist ] && [ -f dist/index.html ]; then
+  npx vite preview --host 0.0.0.0 --port 8080 >>/tmp/app-startup.log 2>&1 &
+else
+  npm run dev >>/tmp/app-startup.log 2>&1 &
+fi

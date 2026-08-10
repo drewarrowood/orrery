@@ -1,56 +1,53 @@
-# Orbital — interactive orrery
+# Orbital — static browser orrery
 
-**Center on any body · cycles & epicycles · Holst planet radio · surface runs**
+**Center any body · epicycles · Holst planet radio · surface runs**
 
-An enhanced version of [drewarrowood/orrery](https://github.com/drewarrowood/orrery) — same 3D solar system explorer, plus a body-centered reference frame, relative epicycle trails (classic retrograde loops when centered on Earth), a public-domain **Planet Radio** (Holst *The Planets*), and short **surface run** films.
+Pure **static** web app — no backend, no install. Same deploy model as
+[live-and-let-live](https://github.com/drewarrowood/live-and-let-live): open in a
+browser or host on **GitHub Pages**.
 
-Deployed like [live-and-let-live](https://github.com/drewarrowood/live-and-let-live): open in the browser, no install.
+**Live (GitHub Pages):** https://drewarrowood.github.io/orrery/
 
-## Features
+## One-click deploy (GitHub Pages)
 
-- **Center frame** — put the Sun or any planet at the origin; the rest of the system moves relative to it
-- **Epicycles** — paint relative paths of other bodies; speed up time to watch outer-planet retrograde loops from Earth
-- **Planet radio** — Holst *The Planets* (public-domain composition + recording). Auto-cues Mars/Venus/Mercury/Jupiter/Uranus when you select that body
-- **Surface runs** — short cinematic skims for Mars, Earth (+ Moon), Venus, Jupiter
-- Orbit trails, labels, pause / speed, click-to-focus camera
-- Mobile-friendly overlays
+1. Push this repo to GitHub (already at [drewarrowood/orrery](https://github.com/drewarrowood/orrery)).
+2. **Settings → Pages → Source: GitHub Actions** (the workflow in `.github/workflows/pages.yml` builds and publishes on every push to `main`).
+3. Or publish the prebuilt folder: **Settings → Pages → Deploy from branch `main` / folder `/docs`**.
 
-## Controls
+No server process. Videos and audio are ordinary static files under `assets/`.
 
-| Action | How |
-| --- | --- |
-| Orbit camera | Drag |
-| Zoom | Scroll / pinch |
-| Focus | Click a body or catalog chip |
-| **Center + epicycles** | Info panel button, or **Center frame** dropdown |
-| Toggle epicycles | Epicycles chip in the control bar |
-| Surface run | **Surface run** on a body that has a clip |
-| Radio | Top-right **Planet radio** (expand, play, shuffle) |
-| Pause | Pause button or `Space` |
-| Clear / heliocentric | Reset or `Esc` |
-
-## Stack
-
-- React 19 + TypeScript + Vite + TanStack Start
-- Three.js via React Three Fiber + Drei
-- Tailwind CSS v4 + Zustand
-
-## Quick start
+## Local
 
 ```bash
 npm install
-npm run dev
+npm run dev        # http://localhost:8080
+npm run build      # → dist/
+npm run preview    # serve production build on :8080
+npm run deploy:pages  # build + copy to docs/ for branch Pages
 ```
 
-```bash
-npm run build
-npm run typecheck
+Or open the built `docs/index.html` after `npm run deploy:pages` via any static host.
+
+## Features
+
+| Feature | How |
+| --- | --- |
+| Center frame | Dropdown or **Center + epicycles** on a body |
+| Epicycles | Relative trails — speed up to see retrograde from Earth |
+| Planet radio | Holst *The Planets* (public domain) |
+| Surface runs | Mars, Earth/Moon, Venus, Jupiter short films |
+| Camera | Drag orbit · scroll zoom · click focus |
+
+## Media (static paths)
+
+```
+public/assets/audio/          →  Holst MP3s + playlist.json
+public/assets/video/surfaces/ →  H.264 surface runs (faststart)
 ```
 
-## Public domain audio
-
-`public/assets/audio/` — Gustav Holst, *The Planets*, Op. 32 (1914–16). Composition is public domain in the US; this recording is the public-domain pack from [OpenGameArt](https://opengameart.org/content/holst-the-planets-suite). See `playlist.json` and `COPYING.txt`.
+All URLs are **relative** (`./assets/...`) so they work on GitHub Pages under
+`/orrery/` and on any static host.
 
 ## License
 
-MIT (code). Audio and media retain their own public-domain / source notices.
+MIT (code). Audio: public-domain Holst pack — see `assets/audio/COPYING.txt`.

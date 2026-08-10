@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Film, X } from "lucide-react";
 import {
-  SURFACE_BASE,
   clipsForBody,
+  surfaceClipUrl,
   type SurfaceClip,
 } from "@/lib/surface-videos";
 import { getBody } from "@/lib/planets";
@@ -37,6 +37,7 @@ export function SurfaceReel() {
   if (!bodyId || !active) return null;
 
   const body = getBody(bodyId);
+  const src = surfaceClipUrl(active.file);
 
   return (
     <div
@@ -78,13 +79,14 @@ export function SurfaceReel() {
 
         <div className="bg-black">
           <video
-            key={active.file}
+            key={src}
             className="aspect-video w-full object-cover"
-            src={SURFACE_BASE + active.file}
+            src={src}
             controls
             autoPlay
             playsInline
             loop
+            preload="metadata"
           />
         </div>
 

@@ -1,3 +1,5 @@
+import { assetUrl } from "./asset-url";
+
 export interface RadioTrack {
   file: string;
   title: string;
@@ -52,4 +54,15 @@ export const FALLBACK_PLAYLIST: RadioTrack[] = [
   },
 ];
 
-export const RADIO_BASE = "/assets/audio/";
+/** Directory of radio files (trailing slash). */
+export function radioBase(): string {
+  return assetUrl("assets/audio/");
+}
+
+export function radioTrackUrl(file: string): string {
+  return assetUrl(`assets/audio/${file}`);
+}
+
+export function radioPlaylistUrl(): string {
+  return assetUrl("assets/audio/playlist.json");
+}

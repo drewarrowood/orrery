@@ -1,3 +1,5 @@
+import { assetUrl } from "./asset-url";
+
 export interface SurfaceClip {
   id: string;
   bodyId: string;
@@ -44,7 +46,9 @@ export const SURFACE_CLIPS: SurfaceClip[] = [
   },
 ];
 
-export const SURFACE_BASE = "/assets/video/surfaces/";
+export function surfaceClipUrl(file: string): string {
+  return assetUrl(`assets/video/surfaces/${file}`);
+}
 
 export function clipsForBody(bodyId: string): SurfaceClip[] {
   return SURFACE_CLIPS.filter((c) => c.bodyId === bodyId);

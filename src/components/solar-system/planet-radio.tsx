@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import {
   FALLBACK_PLAYLIST,
-  RADIO_BASE,
+  radioPlaylistUrl,
+  radioTrackUrl,
   type RadioTrack,
 } from "@/lib/radio-playlist";
 import { useSimStore } from "@/store/sim-store";
@@ -21,7 +22,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Planet-themed field radio — Holst The Planets (public domain), same pattern
- * as live-and-let-live's WWI field radio.
+ * as live-and-let-live's WWI field radio. All media via relative asset URLs.
  */
 export function PlanetRadio() {
   const selectedId = useSimStore((s) => s.selectedId);
@@ -48,7 +49,6 @@ export function PlanetRadio() {
     };
     const onPause = () => setPlaying(false);
     const onEnded = () => {
-      // advance
       setIndex((i) => {
         const list = playlistRef.current;
         if (shuffleRef.current && list.length > 1) {
@@ -95,9 +95,7 @@ export function PlanetRadio() {
     let cancelled = false;
     (async () => {
       try {
-        const r = await fetch(`${RADIO_BASE}playlist.json`, {
-          cache: "no-store",
-        });
+        const r = await fetch(radioPlaylistUrl(), { cache: "no-store" });
         if (r.ok) {
           const data = (await r.json()) as RadioTrack[];
           if (!cancelled && Array.isArray(data) && data.length) {
@@ -118,12 +116,11 @@ export function PlanetRadio() {
       const audio = audioRef.current;
       const track = playlist[i];
       if (!audio || !track) return;
-      audio.src = RADIO_BASE + track.file;
+      audio.src = radioTrackUrl(track.file);
       try {
         await audio.play();
         if (!autoplay) audio.pause();
       } catch {
-        /* autoplay blocked until user gesture */
         setPlaying(false);
       }
     },
@@ -138,13 +135,11 @@ export function PlanetRadio() {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
-  // When user selects a body with a matching Holst movement, cue that track
   useEffect(() => {
     if (!selectedId) return;
     const i = playlist.findIndex((t) => t.planet === selectedId);
     if (i >= 0 && i !== index) {
       setIndex(i);
-      // don't force play — respect current play state
     }
   }, [selectedId, playlist, index]);
 
