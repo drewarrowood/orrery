@@ -1,41 +1,22 @@
-# dependencies
-node_modules/
-.npm/
-.node_modules.lock
-
-# build / deploy
-dist/
-.output/
-.vercel/
-.nitro/
-.tanstack/
-node_modules/.nitro/
-
-# env / secrets
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
 .env
 .env.*
 !.env.example
-
-# logs / OS
+.vercel
+.output
+.nitro
+.vinxi
+.tanstack
 *.log
-npm-debug.log*
-.DS_Store
-Thumbs.db
-
-# editor
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# agent / sandbox (not part of the app)
-.grok/
-artifacts/
-screenshots/
-/tmp/
-AGENTS.md
-AGENTS.project.md
-
-# generated local DB
-*.db
-*.sqlite
+.turbo
+coverage
+.vscode/*
+!.vscode/extensions.json
+.idea
+screenshots/*
+!screenshots/.gitkeep
+artifacts

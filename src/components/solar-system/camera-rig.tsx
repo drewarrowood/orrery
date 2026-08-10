@@ -21,6 +21,8 @@ export function CameraRig({ positionsRef }: CameraRigProps) {
   const controlsRef = useRef<ControlsHandle | null>(null);
   const { camera } = useThree();
   const selectedId = useSimStore((s) => s.selectedId);
+  const centerId = useSimStore((s) => s.centerId);
+  const frameMode = useSimStore((s) => s.frameMode);
   const focusNonce = useSimStore((s) => s.focusNonce);
 
   const animating = useRef(false);
@@ -53,37 +55,47 @@ export function CameraRig({ positionsRef }: CameraRigProps) {
     fromPos.current.copy(camera.position);
     fromTarget.current.copy(controls.target);
 
-    if (!selectedId) {
+    const focusId =
+      frameMode === "centered" && centerId ? centerId : selectedId;
+
+    if (!focusId) {
       toTarget.current.copy(DEFAULT_TARGET);
       toPos.current.copy(DEFAULT_POS);
     } else {
-      const body = getBody(selectedId);
-      const pos = positionsRef.current.get(selectedId);
-      if (!body || !pos) return;
+      const body = getBody(focusId);
+      const pos = positionsRef.current.get(focusId) ?? DEFAULT_TARGET;
+      if (!body) return;
 
       toTarget.current.copy(pos);
-      const dist = Math.max(body.radius * 6.5, 3.5);
+      // Pull back in centered/epicycle mode so relative paths stay readable
+      const dist =
+        frameMode === "centered"
+          ? Math.max(body.radius * 22, 48)
+          : Math.max(body.radius * 6.5, 3.5);
       dir.current.subVectors(camera.position, pos);
       if (dir.current.lengthSq() < 0.001) {
-        dir.current.set(0.4, 0.35, 0.85);
+        dir.current.set(0.45, 0.55, 0.85);
       }
       dir.current.normalize();
-      dir.current.y = Math.max(0.25, Math.abs(dir.current.y));
+      dir.current.y = Math.max(0.35, Math.abs(dir.current.y));
       dir.current.normalize();
       toPos.current.copy(pos).addScaledVector(dir.current, dist);
     }
 
     t.current = 0;
     animating.current = true;
-  }, [selectedId, focusNonce, camera, positionsRef]);
+  }, [selectedId, centerId, frameMode, focusNonce, camera, positionsRef]);
 
   useFrame((_, delta) => {
     const controls = controlsRef.current;
     if (!controls) return;
     const d = Math.min(delta, 0.1);
 
-    if (selectedId && !animating.current) {
-      const pos = positionsRef.current.get(selectedId);
+    const trackId =
+      frameMode === "centered" && centerId ? centerId : selectedId;
+
+    if (trackId && !animating.current) {
+      const pos = positionsRef.current.get(trackId);
       if (pos) {
         offset.current.subVectors(camera.position, controls.target);
         const alpha = 1 - Math.exp(-4 * d);
@@ -115,7 +127,7 @@ export function CameraRig({ positionsRef }: CameraRigProps) {
       enableDamping
       dampingFactor={0.08}
       minDistance={2}
-      maxDistance={140}
+      maxDistance={220}
       maxPolarAngle={Math.PI * 0.92}
       enablePan
       rotateSpeed={0.55}

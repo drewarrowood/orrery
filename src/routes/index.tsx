@@ -8,7 +8,12 @@ const SolarSystemApp = lazy(
 export const Route = createFileRoute("/")({
   component: HomePage,
   head: () => ({
-    meta: [{ title: "Orbital — 3D Solar System" }],
+    meta: [
+      {
+        title:
+          "Orbital — center any body · epicycles · planet radio · surface runs",
+      },
+    ],
   }),
 });
 

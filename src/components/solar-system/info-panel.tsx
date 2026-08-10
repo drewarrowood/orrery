@@ -1,5 +1,6 @@
-import { X } from "lucide-react";
+import { Crosshair, Film, X } from "lucide-react";
 import { getBody, BODIES } from "@/lib/planets";
+import { clipsForBody } from "@/lib/surface-videos";
 import { useSimStore } from "@/store/sim-store";
 import { cn } from "@/lib/utils";
 
@@ -7,6 +8,10 @@ export function InfoPanel() {
   const selectedId = useSimStore((s) => s.selectedId);
   const selectBody = useSimStore((s) => s.selectBody);
   const clearSelection = useSimStore((s) => s.clearSelection);
+  const centerOnBody = useSimStore((s) => s.centerOnBody);
+  const openSurfaceReel = useSimStore((s) => s.openSurfaceReel);
+  const centerId = useSimStore((s) => s.centerId);
+  const frameMode = useSimStore((s) => s.frameMode);
   const body = selectedId ? getBody(selectedId) : null;
 
   if (!body) {
@@ -26,7 +31,7 @@ export function InfoPanel() {
             </h2>
           </div>
           <p className="hidden text-[11px] text-fg-muted sm:block">
-            Click a planet · drag to orbit · scroll to zoom
+            Click · center · epicycles
           </p>
         </div>
         <ul className="mt-2 flex gap-1.5 overflow-x-auto pb-0.5 sm:mt-3 sm:grid sm:grid-cols-3 sm:overflow-visible">
@@ -57,6 +62,8 @@ export function InfoPanel() {
   }
 
   const f = body.facts;
+  const clips = clipsForBody(body.id);
+  const isCenter = frameMode === "centered" && centerId === body.id;
 
   return (
     <div
@@ -97,7 +104,7 @@ export function InfoPanel() {
         </button>
       </div>
 
-      <div className="space-y-2 px-3 py-2 sm:space-y-4 sm:px-5 sm:py-4">
+      <div className="space-y-2 px-3 py-2 sm:space-y-3 sm:px-5 sm:py-4">
         <p className="hidden text-sm leading-relaxed text-fg-muted sm:block">
           {f.summary}
         </p>
@@ -114,6 +121,37 @@ export function InfoPanel() {
             className="hidden sm:block"
           />
         </dl>
+
+        <div className="flex flex-wrap gap-1.5 pt-0.5">
+          <button
+            type="button"
+            onClick={() => centerOnBody(body.id)}
+            className={cn(
+              "inline-flex h-9 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium",
+              "transition-colors active:scale-[0.98]",
+              isCenter
+                ? "border-accent-dim bg-bg-subtle text-accent"
+                : "border-border bg-bg-subtle text-fg hover:border-border-strong",
+            )}
+          >
+            <Crosshair className="size-3.5" strokeWidth={2} aria-hidden />
+            {isCenter ? "Centered + epicycles" : "Center + epicycles"}
+          </button>
+          {clips.length > 0 && (
+            <button
+              type="button"
+              onClick={() => openSurfaceReel(body.id)}
+              className={cn(
+                "inline-flex h-9 items-center gap-1.5 rounded-md border border-border",
+                "bg-bg-subtle px-2.5 text-xs font-medium text-fg",
+                "transition-colors hover:border-border-strong active:scale-[0.98]",
+              )}
+            >
+              <Film className="size-3.5" strokeWidth={2} aria-hidden />
+              Surface run
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

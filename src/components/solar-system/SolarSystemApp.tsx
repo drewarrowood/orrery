@@ -5,6 +5,8 @@ import { Canvas } from "@react-three/fiber";
 import { SolarScene } from "./scene";
 import { ControlsPanel } from "./controls-panel";
 import { InfoPanel } from "./info-panel";
+import { PlanetRadio } from "./planet-radio";
+import { SurfaceReel } from "./surface-reel";
 import { useSimStore } from "@/store/sim-store";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +14,11 @@ export default function SolarSystemApp() {
   const [ready, setReady] = useState(false);
   const clearSelection = useSimStore((s) => s.clearSelection);
   const togglePaused = useSimStore((s) => s.togglePaused);
+  const openSurfaceReel = useSimStore((s) => s.openSurfaceReel);
+  const surfaceReelId = useSimStore((s) => s.surfaceReelId);
+  const frameMode = useSimStore((s) => s.frameMode);
+  const centerId = useSimStore((s) => s.centerId);
+  const showEpicycles = useSimStore((s) => s.showEpicycles);
 
   useEffect(() => {
     setReady(true);
@@ -21,7 +28,8 @@ export default function SolarSystemApp() {
     const onKey = (e: KeyboardEvent) => {
       if (
         e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
       ) {
         return;
       }
@@ -30,12 +38,16 @@ export default function SolarSystemApp() {
         togglePaused();
       }
       if (e.code === "Escape") {
+        if (surfaceReelId) {
+          openSurfaceReel(null);
+          return;
+        }
         clearSelection();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [togglePaused, clearSelection]);
+  }, [togglePaused, clearSelection, openSurfaceReel, surfaceReelId]);
 
   if (!ready) {
     return (
@@ -44,6 +56,11 @@ export default function SolarSystemApp() {
       </div>
     );
   }
+
+  const modeLabel =
+    frameMode === "centered" && centerId
+      ? `Centered on ${centerId}${showEpicycles ? " · epicycles" : ""}`
+      : "Heliocentric";
 
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-bg touch-none">
@@ -56,7 +73,9 @@ export default function SolarSystemApp() {
             alpha: false,
             powerPreference: "high-performance",
           }}
-          onPointerMissed={() => clearSelection()}
+          onPointerMissed={() => {
+            if (!surfaceReelId) clearSelection();
+          }}
           style={{ touchAction: "none" }}
         >
           <Suspense fallback={null}>
@@ -78,12 +97,28 @@ export default function SolarSystemApp() {
         <h1 className="text-lg font-semibold tracking-tight text-fg sm:text-2xl">
           Orbital
         </h1>
-        <p className="mt-0.5 hidden text-xs text-fg-muted sm:block">
-          3D solar system · click to focus · space to pause
+        <p className="mt-0.5 text-xs text-fg-muted">
+          {modeLabel}
+          <span className="hidden sm:inline">
+            {" "}
+            · center any body · epicycles · planet radio
+          </span>
         </p>
       </header>
 
-      {/* Desktop: info top-right, controls bottom-left. Mobile: stack at bottom with scene still visible. */}
+      {/* Radio — top right on desktop, floats above panels on mobile */}
+      <div
+        className={cn(
+          "pointer-events-none absolute z-20",
+          "right-2.5 top-14 sm:right-5 sm:top-5",
+          "pt-[max(0,env(safe-area-inset-top))]",
+        )}
+      >
+        <div className="pointer-events-auto">
+          <PlanetRadio />
+        </div>
+      </div>
+
       <div
         className={cn(
           "pointer-events-none absolute z-10",
@@ -109,6 +144,8 @@ export default function SolarSystemApp() {
       >
         <InfoPanel />
       </div>
+
+      <SurfaceReel />
     </div>
   );
 }

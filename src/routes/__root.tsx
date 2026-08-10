@@ -10,7 +10,7 @@ import appCss from "@/styles.css?url";
 
 const APP_NAME = "Orbital";
 const APP_DESCRIPTION =
-  "Explore a 3D solar system with orbiting planets, adjustable speed, trails, and click-to-focus camera.";
+  "Interactive 3D orrery — center on any body, watch cycles and epicycles, Holst planet radio (public domain), and planetary surface runs.";
 
 export const Route = createRootRoute({
   head: () => {

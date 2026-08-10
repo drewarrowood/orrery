@@ -10,27 +10,37 @@ import { useSimStore } from "@/store/sim-store";
 interface BodyMeshProps {
   body: CelestialBody;
   simTimeRef: MutableRefObject<number>;
-  registerPosition: (id: string, pos: THREE.Vector3) => void;
+  registerHeliocentric: (id: string, pos: THREE.Vector3) => void;
+  registerDisplay: (id: string, pos: THREE.Vector3) => void;
+  centerOffsetRef: MutableRefObject<THREE.Vector3>;
 }
 
-export function BodyMesh({ body, simTimeRef, registerPosition }: BodyMeshProps) {
+export function BodyMesh({
+  body,
+  simTimeRef,
+  registerHeliocentric,
+  registerDisplay,
+  centerOffsetRef,
+}: BodyMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
   const matRef = useRef<THREE.MeshStandardMaterial>(null);
+  const helio = useRef(new THREE.Vector3());
   const selectedId = useSimStore((s) => s.selectedId);
+  const centerId = useSimStore((s) => s.centerId);
   const showLabels = useSimStore((s) => s.showLabels);
   const selectBody = useSimStore((s) => s.selectBody);
   const isSelected = selectedId === body.id;
+  const isCenter = centerId === body.id;
   const isSun = body.kind === "star";
 
   const ringGeo = useMemo(() => {
     if (!body.rings) return null;
-    const geo = new THREE.RingGeometry(
+    return new THREE.RingGeometry(
       body.radius * body.rings.inner,
       body.radius * body.rings.outer,
       64,
     );
-    return geo;
   }, [body]);
 
   useFrame((_, delta) => {
@@ -42,14 +52,22 @@ export function BodyMesh({ body, simTimeRef, registerPosition }: BodyMeshProps) 
     if (body.orbitRadius > 0 && body.periodYears > 0) {
       const angle =
         (simTimeRef.current / (body.periodYears * YEAR_SECONDS)) * Math.PI * 2;
-      g.position.x = Math.cos(angle) * body.orbitRadius;
-      g.position.z = Math.sin(angle) * body.orbitRadius;
-      g.position.y = 0;
+      helio.current.set(
+        Math.cos(angle) * body.orbitRadius,
+        0,
+        Math.sin(angle) * body.orbitRadius,
+      );
     } else {
-      g.position.set(0, 0, 0);
+      helio.current.set(0, 0, 0);
     }
 
-    registerPosition(body.id, g.position);
+    registerHeliocentric(body.id, helio.current);
+
+    g.position
+      .copy(helio.current)
+      .sub(centerOffsetRef.current);
+
+    registerDisplay(body.id, g.position);
 
     if (m) {
       const { paused, speed } = useSimStore.getState();
@@ -61,7 +79,8 @@ export function BodyMesh({ body, simTimeRef, registerPosition }: BodyMeshProps) 
     }
 
     if (matRef.current && !isSun) {
-      matRef.current.emissiveIntensity = isSelected ? 0.18 : 0.04;
+      matRef.current.emissiveIntensity =
+        isSelected || isCenter ? 0.22 : 0.04;
     }
   });
 
@@ -85,13 +104,19 @@ export function BodyMesh({ body, simTimeRef, registerPosition }: BodyMeshProps) 
         castShadow={!isSun}
         receiveShadow
       >
-        <sphereGeometry args={[body.radius, isSun ? 48 : 32, isSun ? 48 : 32]} />
+        <sphereGeometry
+          args={[body.radius, isSun ? 48 : 32, isSun ? 48 : 32]}
+        />
         <meshStandardMaterial
           ref={matRef}
           color={body.color}
           emissive={isSun ? (body.emissive ?? body.color) : body.color}
           emissiveIntensity={
-            isSun ? (body.emissiveIntensity ?? 1.4) : isSelected ? 0.18 : 0.04
+            isSun
+              ? (body.emissiveIntensity ?? 1.4)
+              : isSelected || isCenter
+                ? 0.22
+                : 0.04
           }
           roughness={isSun ? 0.4 : 0.72}
           metalness={isSun ? 0.1 : 0.08}
@@ -131,11 +156,11 @@ export function BodyMesh({ body, simTimeRef, registerPosition }: BodyMeshProps) 
         </mesh>
       )}
 
-      {isSelected && (
+      {(isSelected || isCenter) && (
         <mesh rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[body.radius * 1.35, body.radius * 1.5, 48]} />
           <meshBasicMaterial
-            color="#7eb8ff"
+            color={isCenter ? "#c8d4e8" : "#7eb8ff"}
             transparent
             opacity={0.55}
             side={THREE.DoubleSide}
@@ -154,10 +179,13 @@ export function BodyMesh({ body, simTimeRef, registerPosition }: BodyMeshProps) 
         >
           <div
             className={
-              isSelected ? "ss-label ss-label--selected" : "ss-label"
+              isSelected || isCenter
+                ? "ss-label ss-label--selected"
+                : "ss-label"
             }
           >
             {body.name}
+            {isCenter ? " · center" : ""}
           </div>
         </Html>
       )}

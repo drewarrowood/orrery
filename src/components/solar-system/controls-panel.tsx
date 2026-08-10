@@ -6,8 +6,11 @@ import {
   EyeOff,
   Orbit,
   Gauge,
+  Crosshair,
+  Waypoints,
 } from "lucide-react";
 import { useSimStore } from "@/store/sim-store";
+import { BODIES } from "@/lib/planets";
 import { cn } from "@/lib/utils";
 
 export function ControlsPanel() {
@@ -15,13 +18,20 @@ export function ControlsPanel() {
   const speed = useSimStore((s) => s.speed);
   const showTrails = useSimStore((s) => s.showTrails);
   const showLabels = useSimStore((s) => s.showLabels);
+  const showEpicycles = useSimStore((s) => s.showEpicycles);
+  const frameMode = useSimStore((s) => s.frameMode);
+  const centerId = useSimStore((s) => s.centerId);
   const togglePaused = useSimStore((s) => s.togglePaused);
   const setSpeed = useSimStore((s) => s.setSpeed);
   const setShowTrails = useSimStore((s) => s.setShowTrails);
   const setShowLabels = useSimStore((s) => s.setShowLabels);
+  const setShowEpicycles = useSimStore((s) => s.setShowEpicycles);
+  const setFrameMode = useSimStore((s) => s.setFrameMode);
+  const centerOnBody = useSimStore((s) => s.centerOnBody);
   const clearSelection = useSimStore((s) => s.clearSelection);
 
   const fillPct = ((speed - 0.05) / (12 - 0.05)) * 100;
+  const centered = frameMode === "centered";
 
   return (
     <div
@@ -59,6 +69,8 @@ export function ControlsPanel() {
             onClick={() => {
               clearSelection();
               setSpeed(1);
+              setFrameMode("heliocentric");
+              setShowEpicycles(false);
               if (paused) togglePaused();
             }}
             className={cn(
@@ -66,7 +78,7 @@ export function ControlsPanel() {
               "border border-border bg-bg-subtle text-fg text-sm font-medium",
               "transition-colors duration-150 hover:border-border-strong active:scale-[0.98]",
             )}
-            aria-label="Reset view and speed"
+            aria-label="Reset view and frame"
           >
             <RotateCcw className="size-4" strokeWidth={2} aria-hidden />
             <span className="hidden sm:inline">Reset</span>
@@ -77,8 +89,22 @@ export function ControlsPanel() {
           <ToggleChip
             active={showTrails}
             onClick={() => setShowTrails(!showTrails)}
-            label="Trails"
+            label="Orbits"
             icon={<Orbit className="size-3.5" strokeWidth={2} aria-hidden />}
+          />
+          <ToggleChip
+            active={showEpicycles}
+            onClick={() => {
+              const next = !showEpicycles;
+              setShowEpicycles(next);
+              if (next && !centered && centerId) {
+                setFrameMode("centered");
+              }
+            }}
+            label="Epicycles"
+            icon={
+              <Waypoints className="size-3.5" strokeWidth={2} aria-hidden />
+            }
           />
           <ToggleChip
             active={showLabels}
@@ -93,6 +119,54 @@ export function ControlsPanel() {
             }
           />
         </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between gap-2">
+          <label
+            htmlFor="center-body"
+            className="flex items-center gap-1.5 text-xs font-medium text-fg-muted"
+          >
+            <Crosshair className="size-3.5" strokeWidth={2} aria-hidden />
+            Center frame
+          </label>
+          <span className="font-mono text-[10px] tabular-nums text-fg-subtle">
+            {centered
+              ? `from ${BODIES.find((b) => b.id === centerId)?.name ?? "body"}`
+              : "heliocentric"}
+          </span>
+        </div>
+        <select
+          id="center-body"
+          className={cn(
+            "h-10 w-full rounded-md border border-border bg-bg-subtle px-2.5 text-sm text-fg",
+            "outline-none transition-colors hover:border-border-strong focus:border-accent",
+          )}
+          value={centered && centerId ? centerId : ""}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (!v) {
+              setFrameMode("heliocentric");
+              setShowEpicycles(false);
+              clearSelection();
+              return;
+            }
+            centerOnBody(v);
+          }}
+          aria-label="Center on celestial body"
+        >
+          <option value="">Sun (heliocentric)</option>
+          {BODIES.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
+              {b.kind === "star" ? " — rest frame" : ""}
+            </option>
+          ))}
+        </select>
+        <p className="text-[10px] leading-snug text-fg-subtle">
+          Center on any body to place it at the origin. Turn on Epicycles to
+          paint relative cycles — retrograde loops appear from Earth.
+        </p>
       </div>
 
       <div className="flex flex-col gap-1.5 sm:gap-2">
@@ -169,7 +243,7 @@ function ToggleChip({
       )}
     >
       {icon}
-      <span className="sm:inline">{label}</span>
+      <span className="hidden sm:inline">{label}</span>
     </button>
   );
 }

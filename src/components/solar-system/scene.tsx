@@ -7,39 +7,71 @@ import { Starfield } from "./starfield";
 import { OrbitTrail } from "./orbit-trail";
 import { BodyMesh } from "./body-mesh";
 import { CameraRig } from "./camera-rig";
+import { EpicycleTrails } from "./epicycle-trails";
 
 export function SolarScene() {
   const simTimeRef = useRef(0);
-  const positionsRef = useRef(new Map<string, THREE.Vector3>());
+  const heliocentricRef = useRef(new Map<string, THREE.Vector3>());
+  const displayRef = useRef(new Map<string, THREE.Vector3>());
+  const centerOffsetRef = useRef(new THREE.Vector3());
+  const sunLightRef = useRef<THREE.PointLight>(null);
   const showTrails = useSimStore((s) => s.showTrails);
 
-  const registerPosition = (id: string, pos: THREE.Vector3) => {
-    let stored = positionsRef.current.get(id);
+  const registerHeliocentric = (id: string, pos: THREE.Vector3) => {
+    let stored = heliocentricRef.current.get(id);
     if (!stored) {
       stored = new THREE.Vector3();
-      positionsRef.current.set(id, stored);
+      heliocentricRef.current.set(id, stored);
+    }
+    stored.copy(pos);
+  };
+
+  const registerDisplay = (id: string, pos: THREE.Vector3) => {
+    let stored = displayRef.current.get(id);
+    if (!stored) {
+      stored = new THREE.Vector3();
+      displayRef.current.set(id, stored);
     }
     stored.copy(pos);
   };
 
   useFrame((_, delta) => {
     const d = Math.min(delta, 0.1);
-    const { paused, speed } = useSimStore.getState();
+    const { paused, speed, frameMode, centerId } = useSimStore.getState();
     if (!paused) {
       simTimeRef.current += d * speed;
+    }
+
+    // Resolve frame origin: body-centered or sun
+    if (frameMode === "centered" && centerId) {
+      const c = heliocentricRef.current.get(centerId);
+      if (c) centerOffsetRef.current.copy(c);
+    } else {
+      centerOffsetRef.current.set(0, 0, 0);
+    }
+
+    // Keep sun light attached to the sun in display space
+    if (sunLightRef.current) {
+      const sun = heliocentricRef.current.get("sun");
+      if (sun) {
+        sunLightRef.current.position
+          .copy(sun)
+          .sub(centerOffsetRef.current);
+      }
     }
   });
 
   return (
     <>
       <color attach="background" args={["#050508"]} />
-      <fog attach="fog" args={["#050508", 90, 280]} />
+      <fog attach="fog" args={["#050508", 90, 320]} />
 
       <ambientLight intensity={0.12} />
       <pointLight
+        ref={sunLightRef}
         position={[0, 0, 0]}
         intensity={2.8}
-        distance={200}
+        distance={220}
         decay={1.2}
         color="#ffd9a0"
       />
@@ -51,37 +83,31 @@ export function SolarScene() {
 
       <Starfield />
 
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
-        <circleGeometry args={[54, 64]} />
-        <meshBasicMaterial
-          color="#0a0a12"
-          transparent
-          opacity={0.35}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-        />
-      </mesh>
-
       {showTrails &&
         PLANETS.map((p) => (
           <OrbitTrail
             key={`trail-${p.id}`}
             radius={p.orbitRadius}
             color={p.color}
-            opacity={0.22}
+            opacity={0.2}
+            centerOffsetRef={centerOffsetRef}
           />
         ))}
+
+      <EpicycleTrails heliocentricRef={heliocentricRef} />
 
       {BODIES.map((body) => (
         <BodyMesh
           key={body.id}
           body={body}
           simTimeRef={simTimeRef}
-          registerPosition={registerPosition}
+          registerHeliocentric={registerHeliocentric}
+          registerDisplay={registerDisplay}
+          centerOffsetRef={centerOffsetRef}
         />
       ))}
 
-      <CameraRig positionsRef={positionsRef} />
+      <CameraRig positionsRef={displayRef} />
     </>
   );
 }
