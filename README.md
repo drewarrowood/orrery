@@ -2,52 +2,56 @@
 
 **Center any body · epicycles · Holst planet radio · surface runs**
 
-Pure **static** web app — no backend, no install. Same deploy model as
-[live-and-let-live](https://github.com/drewarrowood/live-and-let-live): open in a
-browser or host on **GitHub Pages**.
+Pure **static** web app — **no backend, no install, no server process**. Same model as
+[live-and-let-live](https://github.com/drewarrowood/live-and-let-live).
 
-**Live (GitHub Pages):** https://drewarrowood.github.io/orrery/
+**Live:** [drewarrowood.github.io/orrery](https://drewarrowood.github.io/orrery/)  
+**Repo:** [github.com/drewarrowood/orrery](https://github.com/drewarrowood/orrery)
 
 ## One-click deploy (GitHub Pages)
 
-1. Push this repo to GitHub (already at [drewarrowood/orrery](https://github.com/drewarrowood/orrery)).
-2. **Settings → Pages → Source: GitHub Actions** (the workflow in `.github/workflows/pages.yml` builds and publishes on every push to `main`).
-3. Or publish the prebuilt folder: **Settings → Pages → Deploy from branch `main` / folder `/docs`**.
+### Option A — Actions (recommended)
 
-No server process. Videos and audio are ordinary static files under `assets/`.
+1. Open repo **Settings → Pages**
+2. **Build and deployment → Source: GitHub Actions**
+3. Push to `main` (workflow `.github/workflows/pages.yml` builds & publishes)
+
+### Option B — prebuilt `/docs` folder (no build on GitHub)
+
+1. **Settings → Pages → Source: Deploy from a branch**
+2. Branch: `main` · Folder: `/docs` · Save
+
+The `docs/` folder is a complete static site (HTML + JS + audio + videos). Open
+`docs/index.html` locally or host it anywhere.
 
 ## Local
 
 ```bash
 npm install
-npm run dev        # http://localhost:8080
-npm run build      # → dist/
-npm run preview    # serve production build on :8080
-npm run deploy:pages  # build + copy to docs/ for branch Pages
+npm run dev          # http://localhost:8080
+npm run build        # → dist/
+npm run preview      # production static on :8080
+npm run deploy:pages # build + copy → docs/
 ```
 
-Or open the built `docs/index.html` after `npm run deploy:pages` via any static host.
+## Why videos work now
+
+| Before (SSR / Vercel server) | Now (static Pages) |
+| --- | --- |
+| Server framework + large media | Plain files under `assets/` |
+| Absolute `/assets/...` paths break under `/orrery/` | Relative `./assets/...` |
+| Heavy unoptimized MP4s | Small H.264 + `faststart` |
 
 ## Features
 
 | Feature | How |
 | --- | --- |
-| Center frame | Dropdown or **Center + epicycles** on a body |
-| Epicycles | Relative trails — speed up to see retrograde from Earth |
+| Center frame | Dropdown or **Center + epicycles** |
+| Epicycles | Relative trails — speed up from Earth for retrograde |
 | Planet radio | Holst *The Planets* (public domain) |
-| Surface runs | Mars, Earth/Moon, Venus, Jupiter short films |
-| Camera | Drag orbit · scroll zoom · click focus |
-
-## Media (static paths)
-
-```
-public/assets/audio/          →  Holst MP3s + playlist.json
-public/assets/video/surfaces/ →  H.264 surface runs (faststart)
-```
-
-All URLs are **relative** (`./assets/...`) so they work on GitHub Pages under
-`/orrery/` and on any static host.
+| Surface runs | Mars, Earth/Moon, Venus, Jupiter |
+| Camera | Drag · zoom · click focus |
 
 ## License
 
-MIT (code). Audio: public-domain Holst pack — see `assets/audio/COPYING.txt`.
+MIT (code). Audio: public-domain Holst — see `assets/audio/COPYING.txt`.
