@@ -1,0 +1,41 @@
+# dependencies
+node_modules/
+.npm/
+.node_modules.lock
+
+# build / deploy
+dist/
+.output/
+.vercel/
+.nitro/
+.tanstack/
+node_modules/.nitro/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# logs / OS
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# agent / sandbox (not part of the app)
+.grok/
+artifacts/
+screenshots/
+/tmp/
+AGENTS.md
+AGENTS.project.md
+
+# generated local DB
+*.db
+*.sqlite
