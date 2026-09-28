@@ -1,4 +1,10 @@
-/** Stylized solar system data — distances/sizes tuned for visual clarity. */
+/**
+ * Solar system data.
+ * Scene radii are compressed so Neptune fits on screen.
+ * `periodYears`, `semiMajorAu`, and `eccentricity` are sidereal elements
+ * (NASA planetary fact sheet scale) and are what the teach layer checks.
+ * The drawing uses circles: eccentricity is stored, not applied to the path.
+ */
 
 export type BodyKind = "star" | "planet" | "dwarf";
 
@@ -8,10 +14,17 @@ export interface CelestialBody {
   kind: BodyKind;
   /** Visual radius in scene units */
   radius: number;
-  /** Orbital radius from parent (0 for sun) */
+  /** Drawn orbital radius from the Sun (0 for the Sun). Not to scale in AU. */
   orbitRadius: number;
-  /** Orbital period in Earth-years (visual base unit) */
+  /**
+   * Sidereal orbital period in Julian years.
+   * Earth is exactly 1 so the sim clock is an Earth year.
+   */
   periodYears: number;
+  /** Semi-major axis in AU. Unused for the Sun. Not the drawn radius. */
+  semiMajorAu: number;
+  /** Orbital eccentricity. The path drawn is the e = 0 circle. */
+  eccentricity: number;
   /** Axial tilt in degrees (visual only) */
   axialTilt: number;
   /** Self-rotation period relative to Earth day (smaller = faster spin) */
@@ -47,6 +60,8 @@ export const BODIES: CelestialBody[] = [
     radius: 2.8,
     orbitRadius: 0,
     periodYears: 0,
+    semiMajorAu: 0,
+    eccentricity: 0,
     axialTilt: 7.25,
     spinDays: 25,
     color: "#ffb84d",
@@ -70,7 +85,9 @@ export const BODIES: CelestialBody[] = [
     kind: "planet",
     radius: 0.28,
     orbitRadius: 7.5,
-    periodYears: 0.24,
+    periodYears: 0.2408467,
+    semiMajorAu: 0.38709893,
+    eccentricity: 0.20563069,
     axialTilt: 0.03,
     spinDays: 58.6,
     color: "#9a9aa3",
@@ -92,7 +109,9 @@ export const BODIES: CelestialBody[] = [
     kind: "planet",
     radius: 0.42,
     orbitRadius: 10.5,
-    periodYears: 0.62,
+    periodYears: 0.61519726,
+    semiMajorAu: 0.72333199,
+    eccentricity: 0.00677323,
     axialTilt: 177.4,
     spinDays: 243,
     color: "#e8c97a",
@@ -115,6 +134,8 @@ export const BODIES: CelestialBody[] = [
     radius: 0.44,
     orbitRadius: 14,
     periodYears: 1,
+    semiMajorAu: 1,
+    eccentricity: 0.01671022,
     axialTilt: 23.4,
     spinDays: 1,
     color: "#4a90d9",
@@ -136,7 +157,9 @@ export const BODIES: CelestialBody[] = [
     kind: "planet",
     radius: 0.32,
     orbitRadius: 18,
-    periodYears: 1.88,
+    periodYears: 1.8808158,
+    semiMajorAu: 1.52366231,
+    eccentricity: 0.09341233,
     axialTilt: 25.2,
     spinDays: 1.03,
     color: "#c45c3e",
@@ -158,7 +181,9 @@ export const BODIES: CelestialBody[] = [
     kind: "planet",
     radius: 1.35,
     orbitRadius: 26,
-    periodYears: 11.86,
+    periodYears: 11.862615,
+    semiMajorAu: 5.20336301,
+    eccentricity: 0.04839266,
     axialTilt: 3.1,
     spinDays: 0.41,
     color: "#d4a574",
@@ -180,7 +205,9 @@ export const BODIES: CelestialBody[] = [
     kind: "planet",
     radius: 1.15,
     orbitRadius: 34,
-    periodYears: 29.46,
+    periodYears: 29.447498,
+    semiMajorAu: 9.53707032,
+    eccentricity: 0.0541506,
     axialTilt: 26.7,
     spinDays: 0.45,
     color: "#e6d5a8",
@@ -208,7 +235,9 @@ export const BODIES: CelestialBody[] = [
     kind: "planet",
     radius: 0.72,
     orbitRadius: 42,
-    periodYears: 84.01,
+    periodYears: 84.016846,
+    semiMajorAu: 19.19126393,
+    eccentricity: 0.04716771,
     axialTilt: 97.8,
     spinDays: 0.72,
     color: "#7ec8d4",
@@ -236,7 +265,9 @@ export const BODIES: CelestialBody[] = [
     kind: "planet",
     radius: 0.7,
     orbitRadius: 50,
-    periodYears: 164.8,
+    periodYears: 164.79132,
+    semiMajorAu: 30.06896348,
+    eccentricity: 0.00858587,
     axialTilt: 28.3,
     spinDays: 0.67,
     color: "#4169e1",

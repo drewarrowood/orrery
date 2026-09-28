@@ -1,7 +1,11 @@
 import { useMemo } from "react";
 import * as THREE from "three";
 
-const STAR_COUNT = 2800;
+const STAR_COUNT =
+  typeof window !== "undefined" &&
+  window.matchMedia("(max-width: 767px), (pointer: coarse)").matches
+    ? 900
+    : 2800;
 
 export function Starfield() {
   const { positions, sizes, colors } = useMemo(() => {

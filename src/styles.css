@@ -40,6 +40,9 @@
   body,
   #root {
     height: 100%;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
   }
 
   html {
@@ -54,7 +57,9 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow: hidden;
+    position: fixed;
+    inset: 0;
+    touch-action: none;
   }
 
   button:not(:disabled),
@@ -96,6 +101,72 @@
 .ss-label--selected {
   color: var(--color-accent);
   border-color: color-mix(in oklab, var(--color-accent) 45%, var(--color-border));
+}
+
+.ss-label--retro {
+  color: var(--color-sun);
+  border-color: color-mix(in oklab, var(--color-sun) 55%, var(--color-border));
+}
+
+/* Scroll inside the locked viewport. touch-action is none on body. */
+.ss-scroll-y {
+  touch-action: pan-y;
+}
+
+.ss-scroll-x {
+  touch-action: pan-x;
+}
+
+.ss-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.ss-range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--color-accent) 0%,
+    var(--color-accent) var(--ss-fill, 0%),
+    var(--color-bg-subtle) var(--ss-fill, 0%),
+    var(--color-bg-subtle) 100%
+  );
+}
+
+.ss-range::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-bg-subtle);
+}
+
+.ss-range::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-accent);
+}
+
+.ss-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-radius: 999px;
+  background: var(--color-fg);
+  border: 2px solid var(--color-accent);
+}
+
+.ss-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--color-fg);
+  border: 2px solid var(--color-accent);
 }
 
 @media (prefers-reduced-motion: reduce) {

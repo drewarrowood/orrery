@@ -41,7 +41,7 @@ export function SurfaceReel() {
 
   return (
     <div
-      className="pointer-events-auto fixed inset-0 z-40 flex items-end justify-center bg-black/70 p-3 sm:items-center sm:p-6"
+      className="pointer-events-auto fixed inset-0 z-40 flex items-end justify-center bg-black/70 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-label="Planetary surface run"
@@ -70,7 +70,7 @@ export function SurfaceReel() {
           <button
             type="button"
             onClick={() => openSurfaceReel(null)}
-            className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border text-fg-muted hover:text-fg"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-md border border-border text-fg-muted hover:text-fg"
             aria-label="Close surface reel"
           >
             <X className="size-4" strokeWidth={2} />

@@ -20,6 +20,16 @@ export interface SimState {
   /** Surface reel open for body id */
   surfaceReelId: string | null;
   radioOpen: boolean;
+  /** True while the Holst element is actually playing (header indicator). */
+  radioPlaying: boolean;
+  /** Guided Kepler/Newton overlay */
+  teachOpen: boolean;
+  teachStep: number;
+  /**
+   * Sim clock in seconds, published ~8 Hz while teach mode is open.
+   * Readouts derive angles from this; the scene itself uses a ref.
+   */
+  simSeconds: number;
   togglePaused: () => void;
   setPaused: (paused: boolean) => void;
   setSpeed: (speed: number) => void;
@@ -33,6 +43,10 @@ export interface SimState {
   clearSelection: () => void;
   openSurfaceReel: (id: string | null) => void;
   setRadioOpen: (open: boolean) => void;
+  setRadioPlaying: (playing: boolean) => void;
+  setTeachOpen: (open: boolean) => void;
+  setTeachStep: (step: number) => void;
+  setSimSeconds: (seconds: number) => void;
 }
 
 export const useSimStore = create<SimState>((set) => ({
@@ -46,7 +60,11 @@ export const useSimStore = create<SimState>((set) => ({
   centerId: null,
   focusNonce: 0,
   surfaceReelId: null,
-  radioOpen: true,
+  radioOpen: false,
+  radioPlaying: false,
+  teachOpen: false,
+  teachStep: 0,
+  simSeconds: 0,
   togglePaused: () => set((s) => ({ paused: !s.paused })),
   setPaused: (paused) => set({ paused }),
   setSpeed: (speed) => set({ speed: Math.min(20, Math.max(0.05, speed)) }),
@@ -81,4 +99,12 @@ export const useSimStore = create<SimState>((set) => ({
     }),
   openSurfaceReel: (surfaceReelId) => set({ surfaceReelId }),
   setRadioOpen: (radioOpen) => set({ radioOpen }),
+  setRadioPlaying: (radioPlaying) => set({ radioPlaying }),
+  setTeachOpen: (teachOpen) =>
+    set((s) => ({
+      teachOpen,
+      teachStep: teachOpen ? 0 : s.teachStep,
+    })),
+  setTeachStep: (teachStep) => set({ teachStep }),
+  setSimSeconds: (simSeconds) => set({ simSeconds }),
 }));

@@ -2,14 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ChevronDown,
-  ChevronUp,
   Pause,
   Play,
   Radio,
   SkipBack,
   SkipForward,
   Shuffle,
+  X,
 } from "lucide-react";
 import {
   FALLBACK_PLAYLIST,
@@ -26,13 +25,15 @@ import { cn } from "@/lib/utils";
  */
 export function PlanetRadio() {
   const selectedId = useSimStore((s) => s.selectedId);
+  const radioOpen = useSimStore((s) => s.radioOpen);
+  const setRadioOpen = useSimStore((s) => s.setRadioOpen);
+  const setRadioPlaying = useSimStore((s) => s.setRadioPlaying);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playlist, setPlaylist] = useState<RadioTrack[]>(FALLBACK_PLAYLIST);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [shuffle, setShuffle] = useState(false);
   const [volume, setVolume] = useState(0.32);
-  const [minimized, setMinimized] = useState(true);
   const [wantPlay, setWantPlay] = useState(false);
   const failStreak = useRef(0);
 
@@ -45,9 +46,13 @@ export function PlanetRadio() {
     const onPlay = () => {
       setPlaying(true);
       setWantPlay(true);
+      setRadioPlaying(true);
       failStreak.current = 0;
     };
-    const onPause = () => setPlaying(false);
+    const onPause = () => {
+      setPlaying(false);
+      setRadioPlaying(false);
+    };
     const onEnded = () => {
       setIndex((i) => {
         const list = playlistRef.current;
@@ -74,13 +79,14 @@ export function PlanetRadio() {
 
     return () => {
       audio.pause();
+      setRadioPlaying(false);
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("error", onError);
       audioRef.current = null;
     };
-  }, []);
+  }, [setRadioPlaying]);
 
   const playlistRef = useRef(playlist);
   const shuffleRef = useRef(shuffle);
@@ -173,11 +179,12 @@ export function PlanetRadio() {
     setWantPlay(true);
   };
 
+  if (!radioOpen) return null;
+
   return (
     <div
       className={cn(
-        "ss-panel pointer-events-auto w-[min(320px,calc(100vw-1.25rem))]",
-        "overflow-hidden shadow-panel",
+        "ss-panel ss-scroll-y pointer-events-auto w-full max-h-[min(70dvh,28rem)] overflow-y-auto overscroll-contain shadow-panel",
       )}
       role="region"
       aria-label="Planet radio"
@@ -210,20 +217,15 @@ export function PlanetRadio() {
         </div>
         <button
           type="button"
-          onClick={() => setMinimized((m) => !m)}
-          className="inline-flex size-8 items-center justify-center rounded-md border border-border text-fg-muted hover:text-fg"
-          aria-label={minimized ? "Expand radio" : "Minimize radio"}
+          onClick={() => setRadioOpen(false)}
+          className="inline-flex size-10 items-center justify-center rounded-md border border-border text-fg-muted hover:text-fg"
+          aria-label="Close planet radio"
         >
-          {minimized ? (
-            <ChevronUp className="size-4" strokeWidth={2} />
-          ) : (
-            <ChevronDown className="size-4" strokeWidth={2} />
-          )}
+          <X className="size-4" strokeWidth={2} />
         </button>
       </header>
 
-      {!minimized && (
-        <div className="space-y-2.5 p-3">
+      <div className="space-y-2.5 p-3">
           <div className="min-h-[2.6em]">
             <p className="text-sm font-medium leading-snug text-fg">
               {track?.title ?? "—"}
@@ -259,7 +261,7 @@ export function PlanetRadio() {
 
           <select
             className={cn(
-              "h-9 w-full rounded-md border border-border bg-bg-subtle px-2 text-xs text-fg",
+              "h-11 w-full rounded-md border border-border bg-bg-subtle px-2 text-base text-fg sm:text-sm",
               "outline-none focus:border-accent",
             )}
             value={index}
@@ -291,16 +293,16 @@ export function PlanetRadio() {
               step={0.01}
               value={volume}
               onChange={(e) => setVolume(Number(e.target.value))}
-              className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-bg-subtle accent-accent"
+              className="ss-range min-w-0 flex-1"
+              style={{ ["--ss-fill" as string]: `${volume * 100}%` }}
             />
-          </div>
-
-          <p className="text-[10px] leading-snug text-fg-subtle">
-            The Planets, Op. 32 — composition and this recording are public
-            domain. Cue follows selected planet when available.
-          </p>
         </div>
-      )}
+
+        <p className="text-[10px] leading-snug text-fg-subtle">
+          The Planets, Op. 32 — composition and this recording are public
+          domain. Cue follows selected planet when available.
+        </p>
+      </div>
     </div>
   );
 }
@@ -325,7 +327,7 @@ function IconBtn({
       aria-label={label}
       aria-pressed={active}
       className={cn(
-        "inline-flex size-9 items-center justify-center rounded-md border text-sm",
+        "inline-flex size-11 items-center justify-center rounded-md border text-sm",
         "transition-colors active:scale-[0.98]",
         primary
           ? "border-transparent bg-fg text-bg-elevated hover:opacity-90"

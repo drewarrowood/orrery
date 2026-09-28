@@ -8,6 +8,7 @@ import { OrbitTrail } from "./orbit-trail";
 import { BodyMesh } from "./body-mesh";
 import { CameraRig } from "./camera-rig";
 import { EpicycleTrails } from "./epicycle-trails";
+import { EqualAreaWedge } from "./equal-area-wedge";
 
 export function SolarScene() {
   const simTimeRef = useRef(0);
@@ -15,6 +16,7 @@ export function SolarScene() {
   const displayRef = useRef(new Map<string, THREE.Vector3>());
   const centerOffsetRef = useRef(new THREE.Vector3());
   const sunLightRef = useRef<THREE.PointLight>(null);
+  const publishAcc = useRef(0);
   const showTrails = useSimStore((s) => s.showTrails);
 
   const registerHeliocentric = (id: string, pos: THREE.Vector3) => {
@@ -48,6 +50,18 @@ export function SolarScene() {
       if (c) centerOffsetRef.current.copy(c);
     } else {
       centerOffsetRef.current.set(0, 0, 0);
+    }
+
+    publishAcc.current += d;
+    if (publishAcc.current >= 0.12) {
+      publishAcc.current = 0;
+      const state = useSimStore.getState();
+      if (
+        state.teachOpen &&
+        Math.abs(state.simSeconds - simTimeRef.current) > 5e-4
+      ) {
+        state.setSimSeconds(simTimeRef.current);
+      }
     }
 
     // Keep sun light attached to the sun in display space
@@ -95,6 +109,10 @@ export function SolarScene() {
         ))}
 
       <EpicycleTrails heliocentricRef={heliocentricRef} />
+      <EqualAreaWedge
+        simTimeRef={simTimeRef}
+        centerOffsetRef={centerOffsetRef}
+      />
 
       {BODIES.map((body) => (
         <BodyMesh

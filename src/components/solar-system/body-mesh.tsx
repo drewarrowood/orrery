@@ -4,7 +4,13 @@ import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import type { ThreeEvent } from "@react-three/fiber";
 import type { CelestialBody } from "@/lib/planets";
-import { YEAR_SECONDS } from "@/lib/planets";
+import { getBody, YEAR_SECONDS } from "@/lib/planets";
+import {
+  formatYears,
+  relativeLongitudeRatePerYear,
+  skySense,
+} from "@/lib/mechanics";
+import { TEACH_STEPS } from "@/lib/teach-steps";
 import { useSimStore } from "@/store/sim-store";
 
 interface BodyMeshProps {
@@ -28,11 +34,45 @@ export function BodyMesh({
   const helio = useRef(new THREE.Vector3());
   const selectedId = useSimStore((s) => s.selectedId);
   const centerId = useSimStore((s) => s.centerId);
+  const frameMode = useSimStore((s) => s.frameMode);
   const showLabels = useSimStore((s) => s.showLabels);
+  const teachOpen = useSimStore((s) => s.teachOpen);
+  const teachStep = useSimStore((s) => s.teachStep);
+  const simSeconds = useSimStore((s) => s.simSeconds);
   const selectBody = useSimStore((s) => s.selectBody);
   const isSelected = selectedId === body.id;
   const isCenter = centerId === body.id;
   const isSun = body.kind === "star";
+  const mobile =
+    typeof window !== "undefined" &&
+    window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
+  const segments = isSun ? (mobile ? 32 : 48) : mobile ? 20 : 32;
+  const hitRadius = Math.min(
+    Math.max(body.radius * 1.7, mobile ? 1.15 : 0.7),
+    isSun ? body.radius * 1.35 : Math.max(body.orbitRadius * 0.22, body.radius * 1.7),
+  );
+
+  const step = teachOpen ? TEACH_STEPS[teachStep] : undefined;
+  let teachNote = "";
+  let retrograde = false;
+  if (step?.id === "periods" && body.periodYears > 0) {
+    teachNote = `${formatYears(body.periodYears)} yr`;
+  } else if (step?.id === "ellipses" && body.kind === "planet") {
+    teachNote = `e ${body.eccentricity.toFixed(3)}`;
+  } else if (
+    (step?.id === "epicycles" || step?.id === "origins") &&
+    frameMode === "centered" &&
+    centerId &&
+    centerId !== body.id &&
+    body.kind === "planet"
+  ) {
+    const center = getBody(centerId);
+    if (center) {
+      const sense = skySense(relativeLongitudeRatePerYear(body, center, simSeconds));
+      teachNote = sense;
+      retrograde = sense === "retrograde";
+    }
+  }
 
   const ringGeo = useMemo(() => {
     if (!body.rings) return null;
@@ -104,9 +144,7 @@ export function BodyMesh({
         castShadow={!isSun}
         receiveShadow
       >
-        <sphereGeometry
-          args={[body.radius, isSun ? 48 : 32, isSun ? 48 : 32]}
-        />
+        <sphereGeometry args={[body.radius, segments, segments]} />
         <meshStandardMaterial
           ref={matRef}
           color={body.color}
@@ -123,9 +161,14 @@ export function BodyMesh({
         />
       </mesh>
 
+      <mesh onClick={handleClick}>
+        <sphereGeometry args={[hitRadius, 10, 10]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+
       {isSun && (
         <mesh scale={1.35}>
-          <sphereGeometry args={[body.radius, 32, 32]} />
+          <sphereGeometry args={[body.radius, segments, segments]} />
           <meshBasicMaterial
             color={body.emissive ?? body.color}
             transparent
@@ -179,13 +222,16 @@ export function BodyMesh({
         >
           <div
             className={
-              isSelected || isCenter
-                ? "ss-label ss-label--selected"
-                : "ss-label"
+              retrograde
+                ? "ss-label ss-label--retro"
+                : isSelected || isCenter
+                  ? "ss-label ss-label--selected"
+                  : "ss-label"
             }
           >
             {body.name}
             {isCenter ? " · center" : ""}
+            {teachNote ? ` · ${teachNote}` : ""}
           </div>
         </Html>
       )}
