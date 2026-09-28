@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 8080",
     "typecheck": "tsc --noEmit",
+    "check": "node --experimental-strip-types --no-warnings scripts/check-kepler.ts",
     "deploy:pages": "npm run build && node scripts/publish-static.mjs"
   },
   "dependencies": {

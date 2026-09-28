@@ -1,16 +1,6 @@
-import {
-  Pause,
-  Play,
-  RotateCcw,
-  Eye,
-  EyeOff,
-  Orbit,
-  Gauge,
-  Crosshair,
-  Waypoints,
-} from "lucide-react";
+import { Pause, Play, RotateCcw, Eye, EyeOff, Orbit, Gauge, Crosshair, Waypoints } from "lucide-react";
 import { useSimStore } from "@/store/sim-store";
-import { BODIES } from "@/lib/planets";
+import { BODIES, getBody } from "@/lib/planets";
 import { cn } from "@/lib/utils";
 
 export function ControlsPanel() {
@@ -32,188 +22,156 @@ export function ControlsPanel() {
 
   const fillPct = ((speed - 0.05) / (12 - 0.05)) * 100;
   const centered = frameMode === "centered";
+  const centerName = centered ? (getBody(centerId ?? "")?.name ?? "body") : "Sun";
 
   return (
     <div
-      className={cn(
-        "ss-panel pointer-events-auto flex w-full max-w-md flex-col gap-2.5 p-2.5 sm:gap-3 sm:p-4",
-      )}
+      className="ss-panel pointer-events-auto flex w-full max-w-md flex-col gap-2 p-2.5 sm:gap-3 sm:p-4"
       role="toolbar"
       aria-label="Simulation controls"
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <button
-            type="button"
-            onClick={togglePaused}
-            className={cn(
-              "inline-flex h-10 min-w-10 items-center justify-center gap-2 rounded-md px-2.5 sm:h-11 sm:min-w-11 sm:px-3",
-              "bg-fg text-bg-elevated text-sm font-medium transition-opacity duration-150",
-              "hover:opacity-90 active:scale-[0.98]",
-            )}
-            aria-pressed={paused}
-            aria-label={paused ? "Resume simulation" : "Pause simulation"}
-          >
-            {paused ? (
-              <Play className="size-4" strokeWidth={2} aria-hidden />
-            ) : (
-              <Pause className="size-4" strokeWidth={2} aria-hidden />
-            )}
-            <span className="hidden sm:inline">
-              {paused ? "Resume" : "Pause"}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              clearSelection();
-              setSpeed(1);
-              setFrameMode("heliocentric");
-              setShowEpicycles(false);
-              if (paused) togglePaused();
-            }}
-            className={cn(
-              "inline-flex h-10 min-w-10 items-center justify-center gap-2 rounded-md px-2.5 sm:h-11 sm:min-w-11 sm:px-3",
-              "border border-border bg-bg-subtle text-fg text-sm font-medium",
-              "transition-colors duration-150 hover:border-border-strong active:scale-[0.98]",
-            )}
-            aria-label="Reset view and frame"
-          >
-            <RotateCcw className="size-4" strokeWidth={2} aria-hidden />
-            <span className="hidden sm:inline">Reset</span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <ToggleChip
-            active={showTrails}
-            onClick={() => setShowTrails(!showTrails)}
-            label="Orbits"
-            icon={<Orbit className="size-3.5" strokeWidth={2} aria-hidden />}
-          />
-          <ToggleChip
-            active={showEpicycles}
-            onClick={() => {
-              const next = !showEpicycles;
-              setShowEpicycles(next);
-              if (next && !centered && centerId) {
-                setFrameMode("centered");
-              }
-            }}
-            label="Epicycles"
-            icon={
-              <Waypoints className="size-3.5" strokeWidth={2} aria-hidden />
-            }
-          />
-          <ToggleChip
-            active={showLabels}
-            onClick={() => setShowLabels(!showLabels)}
-            label="Labels"
-            icon={
-              showLabels ? (
-                <Eye className="size-3.5" strokeWidth={2} aria-hidden />
-              ) : (
-                <EyeOff className="size-3.5" strokeWidth={2} aria-hidden />
-              )
-            }
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between gap-2">
-          <label
-            htmlFor="center-body"
-            className="flex items-center gap-1.5 text-xs font-medium text-fg-muted"
-          >
-            <Crosshair className="size-3.5" strokeWidth={2} aria-hidden />
-            Center frame
-          </label>
-          <span className="font-mono text-[10px] tabular-nums text-fg-subtle">
-            {centered
-              ? `from ${BODIES.find((b) => b.id === centerId)?.name ?? "body"}`
-              : "heliocentric"}
-          </span>
-        </div>
-        <select
-          id="center-body"
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={togglePaused}
           className={cn(
-            "h-10 w-full rounded-md border border-border bg-bg-subtle px-2.5 text-sm text-fg",
-            "outline-none transition-colors hover:border-border-strong focus:border-accent",
+            "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md",
+            "bg-fg text-bg-elevated transition-opacity duration-150",
+            "hover:opacity-90 active:scale-[0.98]",
           )}
-          value={centered && centerId ? centerId : ""}
-          onChange={(e) => {
-            const v = e.target.value;
-            if (!v) {
-              setFrameMode("heliocentric");
-              setShowEpicycles(false);
-              clearSelection();
-              return;
-            }
-            centerOnBody(v);
-          }}
-          aria-label="Center on celestial body"
+          aria-pressed={paused}
+          aria-label={paused ? "Resume simulation" : "Pause simulation"}
         >
-          <option value="">Sun (heliocentric)</option>
-          {BODIES.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-              {b.kind === "star" ? " — rest frame" : ""}
-            </option>
-          ))}
-        </select>
-        <p className="text-[10px] leading-snug text-fg-subtle">
-          Center on any body to place it at the origin. Turn on Epicycles to
-          paint relative cycles — retrograde loops appear from Earth.
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-1.5 sm:gap-2">
-        <div className="flex items-center justify-between gap-2">
-          <label
-            htmlFor="sim-speed"
-            className="flex items-center gap-1.5 text-xs font-medium text-fg-muted"
-          >
-            <Gauge className="size-3.5" strokeWidth={2} aria-hidden />
-            Speed
-          </label>
-          <span className="font-mono text-xs tabular-nums text-fg">
-            {formatSpeed(speed)}×
-          </span>
-        </div>
-        <input
-          id="sim-speed"
-          type="range"
-          min={0.05}
-          max={12}
-          step={0.05}
-          value={speed}
-          onChange={(e) => setSpeed(Number(e.target.value))}
-          className={cn(
-            "h-2 w-full cursor-pointer appearance-none rounded-full",
-            "bg-bg-subtle accent-accent",
+          {paused ? (
+            <Play className="size-4" strokeWidth={2} aria-hidden />
+          ) : (
+            <Pause className="size-4" strokeWidth={2} aria-hidden />
           )}
-          style={{
-            background: `linear-gradient(to right, var(--color-accent) 0%, var(--color-accent) ${fillPct}%, var(--color-bg-subtle) ${fillPct}%, var(--color-bg-subtle) 100%)`,
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            clearSelection();
+            setSpeed(1);
+            setFrameMode("heliocentric");
+            setShowEpicycles(false);
+            if (paused) togglePaused();
           }}
-          aria-valuemin={0.05}
-          aria-valuemax={12}
-          aria-valuenow={speed}
-          aria-valuetext={`${formatSpeed(speed)} times normal speed`}
-        />
-        <div className="flex justify-between text-[10px] text-fg-subtle">
-          <span>Slow</span>
+          className={cn(
+            "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md",
+            "border border-border bg-bg-subtle text-fg",
+            "transition-colors duration-150 hover:border-border-strong active:scale-[0.98]",
+          )}
+          aria-label="Reset view and frame"
+        >
+          <RotateCcw className="size-4" strokeWidth={2} aria-hidden />
+        </button>
+
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <Gauge className="size-3.5 shrink-0 text-fg-muted" strokeWidth={2} aria-hidden />
+          <input
+            id="sim-speed"
+            type="range"
+            min={0.05}
+            max={12}
+            step={0.05}
+            value={speed}
+            onChange={(e) => setSpeed(Number(e.target.value))}
+            className="ss-range min-w-0 flex-1"
+            style={{ ["--ss-fill" as string]: `${fillPct}%` }}
+            aria-label="Simulation speed"
+            aria-valuemin={0.05}
+            aria-valuemax={12}
+            aria-valuenow={speed}
+            aria-valuetext={`${formatSpeed(speed)} times normal speed`}
+          />
           <button
             type="button"
-            className="text-fg-muted underline-offset-2 hover:text-fg hover:underline"
+            className="inline-flex h-11 w-12 shrink-0 items-center justify-end font-mono text-xs tabular-nums text-fg"
             onClick={() => setSpeed(1)}
+            aria-label="Reset speed to 1×"
           >
-            1×
+            {formatSpeed(speed)}×
           </button>
-          <span>Fast</span>
         </div>
       </div>
+
+      <div className="flex flex-wrap items-center gap-1.5">
+        <label htmlFor="center-body" className="sr-only">
+          Center frame
+        </label>
+        <div className="relative min-w-0 flex-1">
+          <Crosshair
+            className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-fg-muted"
+            strokeWidth={2}
+            aria-hidden
+          />
+          <select
+            id="center-body"
+            className={cn(
+              "h-11 w-full rounded-md border border-border bg-bg-subtle pl-8 pr-2 text-base text-fg sm:text-sm",
+              "outline-none transition-colors hover:border-border-strong focus:border-accent",
+            )}
+            value={centered && centerId ? centerId : ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (!v) {
+                setFrameMode("heliocentric");
+                setShowEpicycles(false);
+                clearSelection();
+                return;
+              }
+              centerOnBody(v);
+            }}
+            aria-label="Center on celestial body"
+          >
+            <option value="">Sun — force center</option>
+            {BODIES.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+                {b.kind === "star" ? " — rest frame" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+        <ToggleChip
+          active={showTrails}
+          onClick={() => setShowTrails(!showTrails)}
+          label="Orbits"
+          icon={<Orbit className="size-3.5" strokeWidth={2} aria-hidden />}
+        />
+        <ToggleChip
+          active={showEpicycles}
+          onClick={() => {
+            const next = !showEpicycles;
+            setShowEpicycles(next);
+            if (next && !centered && centerId) {
+              setFrameMode("centered");
+            }
+          }}
+          label="Loops"
+          icon={<Waypoints className="size-3.5" strokeWidth={2} aria-hidden />}
+        />
+        <ToggleChip
+          active={showLabels}
+          onClick={() => setShowLabels(!showLabels)}
+          label="Names"
+          icon={
+            showLabels ? (
+              <Eye className="size-3.5" strokeWidth={2} aria-hidden />
+            ) : (
+              <EyeOff className="size-3.5" strokeWidth={2} aria-hidden />
+            )
+          }
+        />
+      </div>
+
+      <p className="hidden text-[11px] leading-snug text-fg-subtle sm:block">
+        {centered
+          ? `Centered on ${centerName}: its position is subtracted from the others. Loops are that relative path. The Sun stays the center of force.`
+          : "Heliocentric: the Sun is the origin and the force center. Center another body to subtract its motion."}
+      </p>
     </div>
   );
 }
@@ -234,16 +192,17 @@ function ToggleChip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
+      aria-label={label}
       className={cn(
-        "inline-flex h-9 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium",
-        "transition-colors duration-150 active:scale-[0.98]",
+        "inline-flex h-11 shrink-0 flex-col items-center justify-center rounded-md border px-1.5 min-[400px]:px-2",
+        "text-[10px] font-medium leading-none transition-colors duration-150 active:scale-[0.98]",
         active
           ? "border-accent-dim bg-bg-subtle text-accent"
-          : "border-border bg-transparent text-fg-muted hover:text-fg",
+          : "border-border bg-transparent text-fg-muted",
       )}
     >
       {icon}
-      <span className="hidden sm:inline">{label}</span>
+      <span className="mt-0.5">{label}</span>
     </button>
   );
 }

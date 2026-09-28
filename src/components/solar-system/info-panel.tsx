@@ -34,15 +34,15 @@ export function InfoPanel() {
             Click · center · epicycles
           </p>
         </div>
-        <ul className="mt-2 flex gap-1.5 overflow-x-auto pb-0.5 sm:mt-3 sm:grid sm:grid-cols-3 sm:overflow-visible">
+        <ul className="ss-scroll-x mt-2 flex gap-1.5 overflow-x-auto overscroll-x-contain pb-0.5 sm:mt-3 sm:grid sm:grid-cols-3 sm:overflow-visible">
           {BODIES.map((b) => (
             <li key={b.id} className="shrink-0 sm:shrink">
               <button
                 type="button"
                 onClick={() => selectBody(b.id)}
                 className={cn(
-                  "flex items-center gap-2 rounded-md border border-border",
-                  "bg-bg-subtle px-2.5 py-2 text-left text-xs font-medium text-fg",
+                  "flex h-11 items-center gap-2 rounded-md border border-border",
+                  "bg-bg-subtle px-2.5 text-left text-xs font-medium text-fg",
                   "transition-colors duration-150 hover:border-border-strong",
                   "active:scale-[0.98] sm:w-full",
                 )}
@@ -94,7 +94,7 @@ export function InfoPanel() {
           type="button"
           onClick={clearSelection}
           className={cn(
-            "inline-flex size-9 shrink-0 items-center justify-center rounded-md",
+            "inline-flex size-11 shrink-0 items-center justify-center rounded-md",
             "border border-border text-fg-muted transition-colors",
             "hover:border-border-strong hover:text-fg active:scale-[0.98]",
           )}
@@ -127,7 +127,7 @@ export function InfoPanel() {
             type="button"
             onClick={() => centerOnBody(body.id)}
             className={cn(
-              "inline-flex h-9 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium",
+              "inline-flex h-11 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium",
               "transition-colors active:scale-[0.98]",
               isCenter
                 ? "border-accent-dim bg-bg-subtle text-accent"
@@ -135,14 +135,14 @@ export function InfoPanel() {
             )}
           >
             <Crosshair className="size-3.5" strokeWidth={2} aria-hidden />
-            {isCenter ? "Centered + epicycles" : "Center + epicycles"}
+            {isCenter ? "Centered" : "Center here"}
           </button>
           {clips.length > 0 && (
             <button
               type="button"
               onClick={() => openSurfaceReel(body.id)}
               className={cn(
-                "inline-flex h-9 items-center gap-1.5 rounded-md border border-border",
+                "inline-flex h-11 items-center gap-1.5 rounded-md border border-border",
                 "bg-bg-subtle px-2.5 text-xs font-medium text-fg",
                 "transition-colors hover:border-border-strong active:scale-[0.98]",
               )}

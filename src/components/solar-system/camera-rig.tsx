@@ -5,6 +5,8 @@ import * as THREE from "three";
 import { getBody } from "@/lib/planets";
 import { useSimStore } from "@/store/sim-store";
 
+const TOUCH = THREE.TOUCH;
+
 interface CameraRigProps {
   positionsRef: MutableRefObject<Map<string, THREE.Vector3>>;
 }
@@ -19,7 +21,10 @@ const DEFAULT_POS = new THREE.Vector3(0, 28, 58);
 
 export function CameraRig({ positionsRef }: CameraRigProps) {
   const controlsRef = useRef<ControlsHandle | null>(null);
-  const { camera } = useThree();
+  const { camera, size } = useThree();
+  const coarse =
+    typeof window !== "undefined" &&
+    window.matchMedia("(pointer: coarse), (max-width: 767px)").matches;
   const selectedId = useSimStore((s) => s.selectedId);
   const centerId = useSimStore((s) => s.centerId);
   const frameMode = useSimStore((s) => s.frameMode);
@@ -91,6 +96,16 @@ export function CameraRig({ positionsRef }: CameraRigProps) {
     if (!controls) return;
     const d = Math.min(delta, 0.1);
 
+    // Positive offsetY lowers the frustum so the origin sits above the bottom dock.
+    const cam = camera as THREE.PerspectiveCamera;
+    const narrow = size.width < 768;
+    if (narrow && cam.setViewOffset) {
+      const dock = Math.min(size.height * 0.38, 320);
+      cam.setViewOffset(size.width, size.height, 0, dock * 0.55, size.width, size.height);
+    } else if (cam.clearViewOffset) {
+      cam.clearViewOffset();
+    }
+
     const trackId =
       frameMode === "centered" && centerId ? centerId : selectedId;
 
@@ -130,8 +145,14 @@ export function CameraRig({ positionsRef }: CameraRigProps) {
       maxDistance={220}
       maxPolarAngle={Math.PI * 0.92}
       enablePan
-      rotateSpeed={0.55}
-      zoomSpeed={0.85}
+      enableZoom
+      rotateSpeed={coarse ? 0.85 : 0.55}
+      zoomSpeed={coarse ? 1.15 : 0.85}
+      panSpeed={0.8}
+      touches={{
+        ONE: TOUCH.ROTATE,
+        TWO: TOUCH.DOLLY_PAN,
+      }}
     />
   );
 }
